@@ -1,5 +1,8 @@
 package itmo.task2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SkewHeap {
 	private SkewHeapNode root;
 	
@@ -47,6 +50,20 @@ public class SkewHeap {
 			System.out.println(prefix + (isLeft ? "├── " : "└── ") + node.getValue());
 			printHeap(node.getLeft(), prefix + (isLeft ? "│   " : "    "), true);
 			printHeap(node.getRight(), prefix + (isLeft ? "│   " : "    "), false);
+		}
+	}
+	
+	public List<Integer> traverseLeftToRight() {
+		List<Integer> result = new ArrayList<>();
+		traverseLeftToRight(root, result);
+		return result;
+	}
+	
+	private void traverseLeftToRight(SkewHeapNode node, List<Integer> result) {
+		if (node != null) {
+			result.add(node.getValue());
+			traverseLeftToRight(node.getLeft(), result);
+			traverseLeftToRight(node.getRight(), result);
 		}
 	}
 }
