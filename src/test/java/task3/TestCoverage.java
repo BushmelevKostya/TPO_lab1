@@ -1,111 +1,118 @@
 package task3;
 
-import itmo.task3.Building;
-import itmo.task3.Crowd;
-import itmo.task3.Human;
-import itmo.task3.Movement;
+import itmo.task3.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-public class TestCoverage {
+class TestCoverage {
 	
-	@Test
-	void shouldCreateHumanWithDefaultState() {
-		Human arthur = new Human("Артур");
-		assertEquals("Артур", arthur.getName());
-		assertEquals(Movement.НИЧЕГО_НЕ_ДЕЛАТЬ, arthur.getMovement());
-		assertNull(arthur.getPosition());
+	private Human human;
+	private Orator orator;
+	private Artur artur;
+	private Building building;
+	private Crowd crowd;
+	 
+	@BeforeEach
+	void setUp() {
+		human = new Human("Человек");
+		orator = new Orator("Оратор");
+		artur = new Artur();
+		building = new Building("Дворец");
+		crowd = new Crowd();
 	}
 	
 	@Test
-	void shouldChangeLocationWhenGoTo() {
-		Human arthur = new Human("Артур");
-		Building palace = new Building("Дворец");
-		
-		arthur.goTo(palace);
-		assertThat(arthur.toString()).contains("Дворец");
+	void shouldCreateHuman() {
+		assertEquals("Человек", human.getName());
+		assertNull(human.getPosition());
 	}
 	
 	@Test
-	void shouldChangeMovement() {
-		Human arthur = new Human("Артур");
-		arthur.setMovement(Movement.СКОЛЬЗИТЬ_ПО_ВОЗДУХУ);
-		assertEquals(Movement.СКОЛЬЗИТЬ_ПО_ВОЗДУХУ, arthur.getMovement());
+	void shouldChangeLocation() {
+		human.goTo(building);
+		assertEquals(building, human.getPosition());
 	}
 	
 	@Test
-	void shouldMakeSpeechAndAffectCrowd() {
-		Human speaker = new Human("Оратор");
-		Crowd crowd = new Crowd();
-		
-		Human listener1 = new Human("Слушатель 1");
-		Human listener2 = new Human("Слушатель 2");
-		crowd.addHuman(listener1);
-		crowd.addHuman(listener2);
-		
-		speaker.makeSpeech(crowd);
-		
-		assertEquals(Movement.ОБРАЩАТЬСЯ_К_НАРОДУ, speaker.getMovement());
-		assertEquals(Movement.РАЗРАЗИТЬСЯ_КРИКАМИ, listener1.getMovement());
-		assertEquals(Movement.РАЗРАЗИТЬСЯ_КРИКАМИ, listener2.getMovement());
+	void shouldMakeHumanHappy() {
+		human.beHappy();
 	}
 	
 	@Test
-	void shouldConvertToStringCorrectly() {
-		Human arthur = new Human("Артур");
-		assertThat(arthur.toString()).contains("Артур", "НИЧЕГО_НЕ_ДЕЛАТЬ");
-		
-		Building palace = new Building("Дворец");
-		assertThat(palace.toString()).isEqualTo("Здесь возведено: Дворец");
-	}
-	
-	
-	@Test
-	void shouldCreateBuildingWithName() {
-		Building palace = new Building("Дворец");
-		assertEquals("Дворец", palace.getName());
+	void shouldConvertHumanToString() {
+		Human human = new Human("Артур");
+		assertEquals("Артур в данный момент находится в локации null", human.toString());
+		human.goTo(building);
+		assertEquals("Артур в данный момент находится в локации Дворец", human.toString());
 	}
 	
 	@Test
-	void shouldAllowChangingName() {
-		Building palace = new Building("Дворец");
-		palace.setName("Замок");
-		assertEquals("Замок", palace.getName());
+	void shouldCreateBuilding() {
+		assertEquals("Дворец", building.getName());
 	}
-	
+
 	@Test
-	void shouldInitializeWithEmptyHumanList() {
-		Building palace = new Building("Дворец");
-		assertNull(palace.getHumans());
-	}
-	
-	
-	@Test
-	void shouldCreateEmptyCrowd() {
+	void shouldCreateCrowd() {
 		Crowd crowd = new Crowd();
 		assertTrue(crowd.getHumans().isEmpty());
 	}
 	
 	@Test
 	void shouldAddHumansToCrowd() {
-		Crowd crowd = new Crowd();
-		Human person1 = new Human("Человек 1");
-		Human person2 = new Human("Человек 2");
+		Human person1 = mock(Human.class);
+		Human person2 = mock(Human.class);
 		
 		crowd.addHuman(person1);
 		crowd.addHuman(person2);
 		
-		assertThat(crowd.getHumans()).containsExactly(person1, person2);
+		assertEquals(crowd.getHumans().size(), 2);
 	}
 	
+	@Test
+	void shouldMakeCrowdCheer() {
+		Human person1 = mock(Human.class);
+		Human person2 = mock(Human.class);
+		
+		crowd.addHuman(person1);
+		crowd.addHuman(person2);
+		
+		crowd.cheer();
+		
+		verify(person1, times(1)).beHappy();
+		verify(person2, times(1)).beHappy();
+	}
 	
 	@Test
-	void shouldContainCorrectEnumValues() {
-		assertEquals(Movement.НИЧЕГО_НЕ_ДЕЛАТЬ, Movement.valueOf("НИЧЕГО_НЕ_ДЕЛАТЬ"));
-		assertEquals(Movement.СКОЛЬЗИТЬ_ПО_ВОЗДУХУ, Movement.valueOf("СКОЛЬЗИТЬ_ПО_ВОЗДУХУ"));
-		assertEquals(Movement.ОБРАЩАТЬСЯ_К_НАРОДУ, Movement.valueOf("ОБРАЩАТЬСЯ_К_НАРОДУ"));
-		assertEquals(Movement.РАЗРАЗИТЬСЯ_КРИКАМИ, Movement.valueOf("РАЗРАЗИТЬСЯ_КРИКАМИ"));
+	void shouldMakeSpeechSuccessfully() {
+		Building buildingMock = mock(Building.class);
+		Crowd crowdMock = mock(Crowd.class);
+		
+		when(buildingMock.getName()).thenReturn("Помост");
+		orator.goTo(buildingMock);
+		orator.makeSpeech(crowdMock);
+		
+		verify(crowdMock, times(1)).cheer();
+	}
+	
+	@Test
+	void shouldFailMakeSpeech() {
+		Building buildingMock = mock(Building.class);
+		Crowd crowdMock = mock(Crowd.class);
+		
+		when(buildingMock.getName()).thenReturn("Дворец");
+		orator.goTo(buildingMock);
+		
+		orator.makeSpeech(crowdMock);
+		
+		verify(crowdMock, never()).cheer();
+	}
+	
+	@Test
+	void shouldGlideThroughTheAir() {
+		artur.glideThroughTheAir();
+		assertEquals("Величественное окно на втором этаже", artur.getPosition().getName());
 	}
 }

@@ -17,4 +17,10 @@ public class Crowd {
 	public void addHuman(Human human) {
 		humans.add(human);
 	}
+	
+	public void cheer() {
+		for (Human human : humans) {
+			human.beHappy();
+		}
+	}
 }
